@@ -13,7 +13,7 @@ import org.ifno.graphics.GraphicPrimitivesPrototypeFactory;
 import org.ifno.graphics.primitives.GraphicsContainer;
 import org.ifno.graphics.primitives.Line;
 
-public class HelloAndroidActivity extends Activity {
+public class MainActivity extends Activity {
 
     private static String TAG = "FFTAnalyzer";
     private DrawingView drawingView;
