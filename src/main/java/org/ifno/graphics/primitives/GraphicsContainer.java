@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import org.ifno.graphics.interfaces.*;
 
 import java.util.ArrayDeque;
+import java.util.Iterator;
 
 /**
  * Created with IntelliJ IDEA.
@@ -64,7 +65,8 @@ public class GraphicsContainer implements CompositeGraphicObject {
 
     @Override
     public void draw(Canvas canvas) {
-        for (GraphicObject graphicObject : graphicsPool) {
+        for (Iterator<GraphicObject> graphicObjectIterator = graphicsPool.iterator(); graphicObjectIterator.hasNext(); ) {
+            GraphicObject graphicObject = graphicObjectIterator.next();
             if (graphicObject != null)
                 graphicObject.draw(canvas);
         }
@@ -112,7 +114,8 @@ public class GraphicsContainer implements CompositeGraphicObject {
 
     @Override
     public void move(int deltaX, int deltaY) {
-        for (GraphicObject graphicObject : graphicsPool) {
+        for (Iterator<GraphicObject> graphicObjectIterator = graphicsPool.iterator(); graphicObjectIterator.hasNext(); ) {
+            GraphicObject graphicObject = graphicObjectIterator.next();
             if (graphicObject != null)
                 graphicObject.move(deltaX, deltaY);
         }
@@ -120,7 +123,8 @@ public class GraphicsContainer implements CompositeGraphicObject {
 
     @Override
     public void resize(Rect newRect) {
-        for (GraphicObject graphicObject : graphicsPool) {
+        for (Iterator<GraphicObject> graphicObjectIterator = graphicsPool.iterator(); graphicObjectIterator.hasNext(); ) {
+            GraphicObject graphicObject = graphicObjectIterator.next();
             if (graphicObject != null)
                 graphicObject.resize(newRect);
         }
@@ -130,7 +134,8 @@ public class GraphicsContainer implements CompositeGraphicObject {
     public GraphicsContainer cloneGraphicObject() {
         GraphicsContainer graphicsContainer = new GraphicsContainer();
         ArrayDeque<GraphicObject> children = new ArrayDeque<GraphicObject>(graphicsPool.size());
-        for (GraphicObject graphicObject : graphicsPool) {
+        for (Iterator<GraphicObject> graphicObjectIterator = graphicsPool.iterator(); graphicObjectIterator.hasNext(); ) {
+            GraphicObject graphicObject = graphicObjectIterator.next();
             if (graphicObject != null)
                 children.add(graphicObject.cloneGraphicObject());
         }
