@@ -3,6 +3,7 @@ package org.ifno.audio;
 import android.media.AudioRecord;
 import android.util.Log;
 
+import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -23,7 +24,7 @@ public class AudioPoller implements Runnable {
     private final int channelConfig;
     private final int audioFormat;
     private final int bufferSize;
-    private final byte[] soundBuffer;
+    private final short[] soundBuffer;
     private final ArrayBlockingQueue<Future<float[]>> fftJobQueue;
     private final String LOG_TAG = this.getClass().getSimpleName();
 
@@ -35,7 +36,7 @@ public class AudioPoller implements Runnable {
         this.audioFormat = audioFormat;
         this.bufferSize = bufferSize;
         this.fftJobQueue = fftJobQueue;
-        this.soundBuffer = new byte[bufferSize];
+        this.soundBuffer = new short[bufferSize];
         this.audioRecorder = new AudioRecord(audioSource, sampleRate, channelConfig, audioFormat, bufferSize);
         this.audioSource = audioSource;
     }
@@ -44,8 +45,12 @@ public class AudioPoller implements Runnable {
     public void run() {
         audioRecorder.startRecording();
         while (!Thread.currentThread().isInterrupted()) {
-            audioRecorder.read(soundBuffer, 0, bufferSize);
-            FFTJob fftJob = new FFTJob(soundBuffer);
+            int offset = 0;
+            while (offset < bufferSize) {
+                int bytesRead = audioRecorder.read(soundBuffer, offset, bufferSize - offset);
+                offset += bytesRead;
+            }
+            FFTJob fftJob = new FFTJob(soundBuffer.clone());
             try {
                 fftJobQueue.put(executorService.submit(fftJob));
             } catch (InterruptedException e) {

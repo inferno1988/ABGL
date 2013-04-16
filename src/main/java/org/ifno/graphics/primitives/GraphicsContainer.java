@@ -64,6 +64,11 @@ public class GraphicsContainer implements CompositeGraphicObject {
     }
 
     @Override
+    public Iterator<GraphicObject> getChildIterator() {
+        return graphicsPool.iterator();
+    }
+
+    @Override
     public void draw(Canvas canvas) {
         for (Iterator<GraphicObject> graphicObjectIterator = graphicsPool.iterator(); graphicObjectIterator.hasNext(); ) {
             GraphicObject graphicObject = graphicObjectIterator.next();

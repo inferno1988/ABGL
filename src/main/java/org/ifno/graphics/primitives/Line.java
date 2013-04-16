@@ -25,7 +25,7 @@ public class Line implements GraphicObject {
         this.name = name;
     }
 
-    private Line() {
+    public Line() {
 
     }
 

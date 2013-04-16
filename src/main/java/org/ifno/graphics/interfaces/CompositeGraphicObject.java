@@ -1,5 +1,7 @@
 package org.ifno.graphics.interfaces;
 
+import java.util.Iterator;
+
 /**
  * Created with IntelliJ IDEA.
  * User: inferno
@@ -12,4 +14,5 @@ public interface CompositeGraphicObject extends GraphicObject {
     public void addComposite(CompositeGraphicObject compositeGraphicObject);
     public GraphicObject remove(String name);
     public boolean remove(GraphicObject graphicObject);
+    public Iterator<GraphicObject> getChildIterator();
 }
