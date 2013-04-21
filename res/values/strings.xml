@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">FFTAnalyzer</string>
+    <string name="app_name">FFT Spectrum Analyzer</string>
+    <string name="select_visualisation">Select visualisation type:</string>
+    <string name="nextButton">Next</string>
+    <string name="startButton">Strart</string>
+    <string name="stopButton">Stop</string>
+    <string name="colorButton">Toggle color</string>
+    <string name="updateInterval">Update interval:</string>
+
+    <string-array name="visualisation_type">
+        <item>Spectrogram</item>
+        <item>Simple spectrum</item>
+    </string-array>
 </resources>

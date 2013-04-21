@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/select_visualisation"
+        android:id="@+id/textView"
+        android:layout_gravity="left|center_vertical"/>
+
+    <Spinner
+        android:id="@+id/visualtisationList"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/visualisation_type"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/nextButton"
+        android:id="@+id/button"
+        android:layout_gravity="center_vertical|right"
+        android:minWidth="100dp"
+        android:onClick="startSpectrumAnalyzer"/>
+</LinearLayout>

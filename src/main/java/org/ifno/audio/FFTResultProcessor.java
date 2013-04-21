@@ -1,5 +1,7 @@
 package org.ifno.audio;
 
+import android.graphics.Bitmap;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
