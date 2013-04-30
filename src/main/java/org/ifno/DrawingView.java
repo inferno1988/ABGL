@@ -1,12 +1,14 @@
 package org.ifno;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
+import android.graphics.*;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
+import org.ifno.graphics.primitives.BitmapPrimitive;
 import org.ifno.graphics.primitives.GraphicsContainer;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -18,14 +20,13 @@ import java.util.concurrent.atomic.AtomicLong;
  * Time: 17:23
  * Palamarchuk Maksym © 2013
  */
-public class DrawingView extends View {
+public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
 
     private final int baseUpdateInterval = getResources().getInteger(R.integer.base_update_interval);
     private GraphicsContainer graphicsContainer;
     private TimedInvalidator timedInvalidator = null;
     private final String LOG_TAG = this.getClass().getSimpleName();
     private Paint paint = new Paint();
-
     {
         paint.setColor(Color.WHITE);
         paint.setStrokeWidth(2);
@@ -44,33 +45,12 @@ public class DrawingView extends View {
     public DrawingView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        getHolder().addCallback(this);
     }
 
     public DrawingView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         setLayerType(View.LAYER_TYPE_HARDWARE, null);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        Log.v(LOG_TAG, "onDraw in");
-        if (timedInvalidator == null) {
-            timedInvalidator = new TimedInvalidator(this);
-            timedInvalidatorThread = new Thread(timedInvalidator);
-            timedInvalidatorThread.setDaemon(true);
-            timedInvalidatorThread.start();
-
-        }
-        canvas.drawColor(Color.BLACK);
-        canvas.drawRect(2, 2, canvas.getWidth() - 2, canvas.getHeight() - 2, paint);
-        if (graphicsContainer != null)
-            graphicsContainer.draw(canvas);
-        else {
-            canvas.drawText("Nothing to draw, sorry. Time is: " + System.currentTimeMillis(), 0, 20, paint);
-            canvas.drawText("Canvas size: w->" + canvas.getWidth() + " h->" + canvas.getHeight(), 0, 50, paint);
-            canvas.drawText("Update interval: " + timedInvalidator.getUpdateInterval(), 0, 80, paint);
-        }
-        Log.v(LOG_TAG, "onDraw out");
     }
 
     public GraphicsContainer getGraphicsContainer() {
@@ -97,6 +77,24 @@ public class DrawingView extends View {
         return baseUpdateInterval;
     }
 
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        timedInvalidator = new TimedInvalidator(this);
+        timedInvalidatorThread = new Thread(timedInvalidator, "TimedInvalidator");
+        timedInvalidatorThread.setDaemon(true);
+        timedInvalidatorThread.start();
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        timedInvalidator.interrupt();
+    }
+
     private final class TimedInvalidator implements Runnable {
         private final DrawingView drawingView;
         private final AtomicLong sleepTime;
@@ -117,11 +115,11 @@ public class DrawingView extends View {
 
         @Override
         public void run() {
-            while (true && !Thread.currentThread().isInterrupted()) {
+            while (!Thread.currentThread().isInterrupted()) {
                 Log.v(LOG_TAG, "repainting");
                 try {
                     if (updating) {
-                        drawingView.postInvalidate();
+                        draw();
                         Thread.sleep(sleepTime.get());
                     } else {
                         checkForPaused();
@@ -129,6 +127,20 @@ public class DrawingView extends View {
                 } catch (InterruptedException e) {
                 }
             }
+        }
+
+        private void draw() {
+            Canvas canvas = getHolder().lockCanvas();
+            canvas.drawColor(Color.BLACK);
+            canvas.drawRect(2, 2, canvas.getWidth() - 2, canvas.getHeight() - 2, paint);
+            if (graphicsContainer != null)
+                graphicsContainer.draw(canvas);
+            else {
+                canvas.drawText("Nothing to draw, sorry. Time is: " + System.currentTimeMillis(), 0, 20, paint);
+                canvas.drawText("Canvas size: w->" + canvas.getWidth() + " h->" + canvas.getHeight(), 0, 50, paint);
+                canvas.drawText("Update interval: " + timedInvalidator.getUpdateInterval(), 0, 80, paint);
+            }
+            getHolder().unlockCanvasAndPost(canvas);
         }
 
         private void checkForPaused() throws InterruptedException {
@@ -146,6 +158,12 @@ public class DrawingView extends View {
                 updating = true;
                 this.notify();
             }
+        }
+
+        public void interrupt() {
+            if (!updating)
+                startUpdating();
+            Thread.currentThread().interrupt();
         }
     }
 }

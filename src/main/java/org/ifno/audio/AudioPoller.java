@@ -2,6 +2,7 @@ package org.ifno.audio;
 
 import android.media.AudioRecord;
 import android.util.Log;
+import edu.emory.mathcs.utils.ConcurrencyUtils;
 
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -34,11 +35,15 @@ public class AudioPoller implements Runnable {
         this.sampleRate = sampleRate;
         this.channelConfig = channelConfig;
         this.audioFormat = audioFormat;
-        this.bufferSize = bufferSize;
         this.fftJobQueue = fftJobQueue;
+        if (!ConcurrencyUtils.isPowerOf2(bufferSize)) {
+            this.bufferSize = ConcurrencyUtils.nextPow2(bufferSize);
+        } else {
+            this.bufferSize = bufferSize;
+        }
         this.soundBuffer = new short[bufferSize];
-        this.audioRecorder = new AudioRecord(audioSource, sampleRate, channelConfig, audioFormat, bufferSize);
         this.audioSource = audioSource;
+        this.audioRecorder = new AudioRecord(this.audioSource, this.sampleRate, this.channelConfig, this.audioFormat, this.bufferSize);
     }
 
     @Override

@@ -28,7 +28,7 @@ public class SpectrogramActivity extends Activity {
     private static final String LOG_TAG = SpectrogramActivity.class.getSimpleName();
     private static final int FFT_JOB_QUEUE_CAPACITY = 10;
     private static final int SAMPLE_RATE = 44100;
-    public static final int UPDATE_INTERVAL_LIMIT = 33;
+    public static final int UPDATE_INTERVAL_LIMIT = 16;
     private DrawingView drawingView;
     private Button toggleProcessingButton;
     private SeekBar updateIntervalSeekBar;
@@ -69,11 +69,8 @@ public class SpectrogramActivity extends Activity {
     }
 
     private void initThreads() {
-        int minBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_IN_MONO, ENCODING_PCM_16_BIT);
-        if (!ConcurrencyUtils.isPowerOf2(minBufferSize)) {
-            minBufferSize = ConcurrencyUtils.nextPow2(minBufferSize);
-        }
         if (audioPoller == null) {
+            int minBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_IN_MONO, ENCODING_PCM_16_BIT);
             audioPoller = new AudioPoller(executor, fftJobQueue, MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_IN_MONO, ENCODING_PCM_16_BIT, minBufferSize);
             audioPollerThread = new Thread(audioPoller, "AudioPoller");
             audioPollerThread.setDaemon(true);
