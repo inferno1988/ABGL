@@ -42,6 +42,8 @@ public class SpectrogramActivity extends Activity {
     private FFTResultProcessor fftResultProcessor;
     private Thread audioPollerThread;
     private Thread resultProcessorThread;
+    private CharSequence startButtonText;
+    private CharSequence stopButtonText;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,15 +53,21 @@ public class SpectrogramActivity extends Activity {
         drawingView = (DrawingView) findViewById(R.id.drawing_view);
         toggleProcessingButton = (Button) findViewById(R.id.startButton);
         updateIntervalSeekBar = (SeekBar) findViewById(R.id.updateIntervalSeekBar);
-
+        drawingView.setUpdateInterval(updateIntervalSeekBar.getProgress());
         updateIntervalSeekBar.setOnSeekBarChangeListener(new UpdateIntervalProgressHandler(drawingView));
+        startButtonText = getResources().getText(R.string.startButton);
+        stopButtonText = getResources().getText(R.string.stopButton);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        drawingView.stopDrawing();
     }
 
     public void toggleProcessing(View view) {
-        final CharSequence startButtonText = getResources().getText(R.string.startButton);
-        final CharSequence stopButtonText = getResources().getText(R.string.stopButton);
         final CharSequence currentButtonText = toggleProcessingButton.getText();
-        if (currentButtonText == startButtonText) {
+        if (currentButtonText.equals(startButtonText)) {
             drawingView.startDrawing();
             toggleProcessingButton.setText(stopButtonText);
         } else {

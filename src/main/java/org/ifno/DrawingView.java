@@ -1,14 +1,13 @@
 package org.ifno;
 
 import android.content.Context;
-import android.graphics.*;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-import org.ifno.graphics.primitives.BitmapPrimitive;
 import org.ifno.graphics.primitives.GraphicsContainer;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,6 +26,7 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
     private TimedInvalidator timedInvalidator = null;
     private final String LOG_TAG = this.getClass().getSimpleName();
     private Paint paint = new Paint();
+
     {
         paint.setColor(Color.WHITE);
         paint.setStrokeWidth(2);
@@ -39,18 +39,16 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
 
     public DrawingView(Context context) {
         super(context);
-        setLayerType(View.LAYER_TYPE_HARDWARE, null);
     }
 
     public DrawingView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setLayerType(View.LAYER_TYPE_HARDWARE, null);
         getHolder().addCallback(this);
+        timedInvalidator = new TimedInvalidator(baseUpdateInterval);
     }
 
     public DrawingView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        setLayerType(View.LAYER_TYPE_HARDWARE, null);
     }
 
     public GraphicsContainer getGraphicsContainer() {
@@ -79,7 +77,9 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        timedInvalidator = new TimedInvalidator(this);
+        if (!timedInvalidator.isEnabled()) {
+            timedInvalidator.enable();
+        }
         timedInvalidatorThread = new Thread(timedInvalidator, "TimedInvalidator");
         timedInvalidatorThread.setDaemon(true);
         timedInvalidatorThread.start();
@@ -87,7 +87,7 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        Log.i(LOG_TAG, "Surface changed");
     }
 
     @Override
@@ -96,13 +96,12 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private final class TimedInvalidator implements Runnable {
-        private final DrawingView drawingView;
         private final AtomicLong sleepTime;
         private boolean updating = false;
+        private volatile boolean enabled = true;
 
-        private TimedInvalidator(DrawingView drawingView) {
-            this.drawingView = drawingView;
-            sleepTime = new AtomicLong(this.drawingView.getBaseUpdateInterval());
+        private TimedInvalidator(long sleepTime) {
+            this.sleepTime = new AtomicLong(sleepTime);
         }
 
         private long getUpdateInterval() {
@@ -115,7 +114,7 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
 
         @Override
         public void run() {
-            while (!Thread.currentThread().isInterrupted()) {
+            while (enabled) {
                 Log.v(LOG_TAG, "repainting");
                 try {
                     if (updating) {
@@ -131,6 +130,8 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
 
         private void draw() {
             Canvas canvas = getHolder().lockCanvas();
+            if (canvas == null)
+                return;
             canvas.drawColor(Color.BLACK);
             canvas.drawRect(2, 2, canvas.getWidth() - 2, canvas.getHeight() - 2, paint);
             if (graphicsContainer != null)
@@ -163,7 +164,15 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
         public void interrupt() {
             if (!updating)
                 startUpdating();
-            Thread.currentThread().interrupt();
+            enabled = false;
+        }
+
+        public void enable() {
+            enabled = true;
+        }
+
+        private boolean isEnabled() {
+            return enabled;
         }
     }
 }
