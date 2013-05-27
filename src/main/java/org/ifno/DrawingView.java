@@ -1,9 +1,9 @@
 package org.ifno;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
+import android.graphics.*;
+import android.os.*;
+import android.os.Process;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -99,8 +99,19 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
         private final AtomicLong sleepTime;
         private boolean updating = false;
         private volatile boolean enabled = true;
+        private final Bitmap bitmap = Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888);
+        private final Canvas canvas = new Canvas(bitmap);
+        private final Canvas paintCanvas = new Canvas();
 
         private TimedInvalidator(long sleepTime) {
+            bitmap.eraseColor(Color.BLUE);
+            final Paint paint1 = new Paint();
+            paint1.setStyle(Paint.Style.STROKE);
+            paint1.setColor(Color.WHITE);
+            paint1.setStrokeWidth(1f);
+            canvas.drawRect(new Rect(288, 288, 298, 298), paint1);
+            canvas.translate(-1, 0);
+            canvas.drawBitmap(bitmap, 0, 0, null);
             this.sleepTime = new AtomicLong(sleepTime);
         }
 
@@ -109,11 +120,12 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         private void setUpdateInterval(long updateInterval) {
-            this.sleepTime.getAndSet(updateInterval);
+            this.sleepTime.set(updateInterval);
         }
 
         @Override
         public void run() {
+            android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY);
             while (enabled) {
                 Log.v(LOG_TAG, "repainting");
                 try {
@@ -134,6 +146,17 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
                 return;
             canvas.drawColor(Color.BLACK);
             canvas.drawRect(2, 2, canvas.getWidth() - 2, canvas.getHeight() - 2, paint);
+
+
+            final Paint paint1 = new Paint();
+            paint1.setStyle(Paint.Style.FILL);
+            paint1.setColor(Color.BLUE);
+            this.canvas.drawBitmap(bitmap, 0, 0, null);
+            this.canvas.drawRect(new Rect(299, 0, 300, 300), paint1);
+
+
+            canvas.drawBitmap(bitmap, 100, 100, null);
+
             if (graphicsContainer != null)
                 graphicsContainer.draw(canvas);
             else {

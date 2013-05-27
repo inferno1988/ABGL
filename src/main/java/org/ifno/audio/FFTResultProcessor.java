@@ -1,6 +1,7 @@
 package org.ifno.audio;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutionException;
@@ -30,17 +31,18 @@ public class FFTResultProcessor implements Runnable {
                 if (futureTask == null)
                     continue;
                 final float[] result = futureTask.get();
-                final double[] magnitude = new double[result.length / 2];
+                final float[] magnitude = new float[result.length / 2];
                 for (int k = 0; k < result.length / 2 - 1; k++) {
                     float real = result[2 * k];
                     float im = result[2 * k + 1];
-                    magnitude[k] = Math.sqrt(real * real + im * im);
+                    magnitude[k] = (float) Math.sqrt(real * real + im * im);
                 }
-
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Log.e(LOG_TAG, "FFT result processor was interrupted");
+                return;
             } catch (ExecutionException e) {
                 e.printStackTrace();
+                return;
             }
         }
     }

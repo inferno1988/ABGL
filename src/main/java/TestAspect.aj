@@ -8,9 +8,9 @@ import android.util.Log;
  * Palamarchuk Maksym © 2013
  */
 public aspect TestAspect {
-    pointcut mainMethod() : execution(public void onCreate(..));
+    pointcut mainMethod() : execution(* org.ifno.graphics.primitives.Rectangle.cloneGraphicObject(..));
 
     after() returning : mainMethod() {
-        Log.d(new String("ASPECT"), "Aspect works");
+        System.out.println("AOP test coverage");
     }
 }

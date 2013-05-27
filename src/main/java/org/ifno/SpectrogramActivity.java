@@ -5,13 +5,11 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.SeekBar;
-import edu.emory.mathcs.utils.ConcurrencyUtils;
 import org.ifno.audio.AudioPoller;
 import org.ifno.audio.FFTResultProcessor;
 
@@ -63,6 +61,7 @@ public class SpectrogramActivity extends Activity {
     protected void onPause() {
         super.onPause();
         drawingView.stopDrawing();
+        executor.shutdown();
     }
 
     public void toggleProcessing(View view) {
@@ -70,21 +69,24 @@ public class SpectrogramActivity extends Activity {
         if (currentButtonText.equals(startButtonText)) {
             drawingView.startDrawing();
             toggleProcessingButton.setText(stopButtonText);
+            initThreads();
         } else {
             drawingView.stopDrawing();
             toggleProcessingButton.setText(startButtonText);
+            audioPollerThread.interrupt();
+            resultProcessorThread.interrupt();
         }
     }
 
     private void initThreads() {
-        if (audioPoller == null) {
+        if (audioPollerThread == null || !audioPollerThread.isAlive()) {
             int minBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_IN_MONO, ENCODING_PCM_16_BIT);
             audioPoller = new AudioPoller(executor, fftJobQueue, MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_IN_MONO, ENCODING_PCM_16_BIT, minBufferSize);
             audioPollerThread = new Thread(audioPoller, "AudioPoller");
             audioPollerThread.setDaemon(true);
             audioPollerThread.start();
         }
-        if (fftResultProcessor == null) {
+        if (resultProcessorThread == null || !resultProcessorThread.isAlive()) {
             fftResultProcessor = new FFTResultProcessor(fftJobQueue);
             resultProcessorThread = new Thread(fftResultProcessor, "DataProcessor");
             resultProcessorThread.setDaemon(true);

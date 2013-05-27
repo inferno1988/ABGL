@@ -1,5 +1,6 @@
 package org.ifno.graphics.visualisation;
 
+import android.content.Context;
 import org.ifno.graphics.visualisation.strategies.SimpleSpectrumVisualisationStrategy;
 import org.ifno.graphics.visualisation.strategies.SpectrogramVisualisationStrategy;
 import org.ifno.graphics.visualisation.strategies.VisualisationStrategy;
@@ -15,20 +16,15 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class VisualisationContext {
     private final ConcurrentHashMap<Class<? extends VisualisationStrategy>, VisualisationStrategy> visualisationStrategyMap = new ConcurrentHashMap<Class<? extends VisualisationStrategy>, VisualisationStrategy>();
+    private final Context context;
 
-    public VisualisationContext() {
-        initBaseStrategies();
-    }
-
-    private void initBaseStrategies() {
-        visualisationStrategyMap.put(SimpleSpectrumVisualisationStrategy.class, new SimpleSpectrumVisualisationStrategy());
-        visualisationStrategyMap.put(SpectrogramVisualisationStrategy.class, new SpectrogramVisualisationStrategy());
+    public VisualisationContext(Context context) {
+        this.context = context;
     }
 
     public void registerStrategy(VisualisationStrategy visualisationStrategy) {
         visualisationStrategyMap.put(visualisationStrategy.getClass(), visualisationStrategy);
     }
-
 
     public VisualisationStrategy getVisualisationStrategy(Class<? extends VisualisationStrategy> strategy) {
         VisualisationStrategy visualisationStrategy = visualisationStrategyMap.get(strategy);

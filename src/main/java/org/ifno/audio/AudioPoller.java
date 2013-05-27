@@ -1,10 +1,10 @@
 package org.ifno.audio;
 
 import android.media.AudioRecord;
+import android.os.Process;
 import android.util.Log;
 import edu.emory.mathcs.utils.ConcurrencyUtils;
 
-import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -41,25 +41,37 @@ public class AudioPoller implements Runnable {
         } else {
             this.bufferSize = bufferSize;
         }
-        this.soundBuffer = new short[bufferSize];
+        this.soundBuffer = new short[this.bufferSize];
         this.audioSource = audioSource;
         this.audioRecorder = new AudioRecord(this.audioSource, this.sampleRate, this.channelConfig, this.audioFormat, this.bufferSize);
     }
 
     @Override
     public void run() {
+        Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO);
         audioRecorder.startRecording();
         while (!Thread.currentThread().isInterrupted()) {
-            int offset = 0;
-            while (offset < bufferSize) {
-                int bytesRead = audioRecorder.read(soundBuffer, offset, bufferSize - offset);
-                offset += bytesRead;
-            }
-            FFTJob fftJob = new FFTJob(soundBuffer.clone());
             try {
+                int offset = 0;
+                while (offset < bufferSize) {
+                    Thread.sleep(16);
+                    int bytesRead = audioRecorder.read(soundBuffer, offset, bufferSize - offset);
+                    if (bytesRead == AudioRecord.ERROR_BAD_VALUE) {
+                        audioRecorder.stop();
+                        audioRecorder.release();
+                        audioRecorder = null;
+                        throw new IllegalStateException("Can't read from data from audio record, something goes wrong.");
+                    }
+                    offset += bytesRead;
+                }
+                FFTJob fftJob = new FFTJob(soundBuffer.clone());
                 fftJobQueue.put(executorService.submit(fftJob));
             } catch (InterruptedException e) {
-                Log.e(LOG_TAG, "Job queue is interrupted");
+                Log.e(LOG_TAG, "AudioPoller result processor was interrupted");
+                audioRecorder.stop();
+                audioRecorder.release();
+                audioRecorder = null;
+                return;
             }
             Log.v(LOG_TAG, "Added job: -> " + fftJobQueue.size());
         }

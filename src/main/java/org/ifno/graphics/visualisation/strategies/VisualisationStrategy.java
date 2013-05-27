@@ -1,5 +1,9 @@
 package org.ifno.graphics.visualisation.strategies;
 
+import android.graphics.Bitmap;
+
+import java.util.List;
+
 /**
  * Created with IntelliJ IDEA.
  * User: inferno
@@ -7,5 +11,8 @@ package org.ifno.graphics.visualisation.strategies;
  * Time: 21:08
  * Palamarchuk Maksym © 2013
  */
-public interface VisualisationStrategy {
+public interface VisualisationStrategy<InputDataType> {
+    public Bitmap visualise(InputDataType data);
+    public Bitmap getVisualisationResult();
+    public void releaseResources();
 }
