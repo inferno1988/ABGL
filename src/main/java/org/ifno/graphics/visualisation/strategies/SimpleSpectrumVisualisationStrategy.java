@@ -22,10 +22,8 @@ public class SimpleSpectrumVisualisationStrategy implements VisualisationStrateg
     {
         paint.setColor(Color.WHITE);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(10.f);
+        paint.setStrokeWidth(1.f);
     }
-
-    private float multiplier = .0001f;
 
     public SimpleSpectrumVisualisationStrategy(Bitmap bitmap) {
         this.bitmap = bitmap;
@@ -38,20 +36,15 @@ public class SimpleSpectrumVisualisationStrategy implements VisualisationStrateg
             bitmap.eraseColor(Color.BLACK);
             if (dataSnapshot == null)
                 dataSnapshot = data;
-            for (int i = 0; i < canvas.getWidth()/10; i++) {
+            int limit;
+            if (canvas.getWidth() > data.length)
+                limit = data.length;
+            else
+                limit = canvas.getWidth();
+
+            for (int i = 0; i < limit; i++) {
                 float v = data[i];
-/*                if ((v * multiplier) > canvas.getHeight())
-                    v = (canvas.getHeight() / multiplier);*/
-                if (dataSnapshot[i] > v) {
-                    dataSnapshot[i] -= 5.f / multiplier;
-/*                    if (dataSnapshot[i] < 0) {
-                        dataSnapshot[i] = 0;
-                    }*/
-                    canvas.drawLine(i*10, canvas.getHeight(), i*10, canvas.getHeight() - (dataSnapshot[i] * multiplier), paint);
-                } else {
-                    canvas.drawLine(i*10, canvas.getHeight(), i*10, canvas.getHeight() - (v * multiplier), paint);
-                    dataSnapshot[i] = v;
-                }
+                canvas.drawLine(i, canvas.getHeight(), i, (float) (canvas.getHeight() - (30 * Math.log10(v))), paint);
             }
         }
     }

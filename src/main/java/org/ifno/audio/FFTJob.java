@@ -37,7 +37,7 @@ public class FFTJob implements Callable<float[]> {
     private float[] shortToFloat(short[] audioBuffer) {
         final float[] result = new float[audioBuffer.length];
         for (int i = 0; i < audioBuffer.length; i++) {
-            result[i] = audioBuffer[i] * hammingWindow(i, audioBuffer.length);
+            result[i] = audioBuffer[i] * blackmanHarrisWindow(i, audioBuffer.length);
         }
         return result;
     }
