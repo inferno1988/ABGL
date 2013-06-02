@@ -36,9 +36,12 @@ public class FFTResultProcessor implements Runnable {
                     float real = result[2 * k];
                     float im = result[2 * k + 1];
                     magnitude[k] = (float) Math.sqrt(real * real + im * im);
+
                 }
             } catch (InterruptedException e) {
                 Log.e(LOG_TAG, "FFT result processor was interrupted");
+                if (!fftJobQueue.isEmpty())
+                    fftJobQueue.clear();
                 return;
             } catch (ExecutionException e) {
                 e.printStackTrace();

@@ -16,8 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class GraphicPrimitivesPrototypeFactory {
 
-    public static final int INITIAL_CAPACITY_OF_PROTOTYPE_LIST = 10;
-    private ConcurrentHashMap<Class<? extends GraphicObject>, org.ifno.graphics.interfaces.Cloneable<? extends GraphicObject>> graphicObjectClassList = new ConcurrentHashMap<Class<? extends GraphicObject>, org.ifno.graphics.interfaces.Cloneable<? extends GraphicObject>>(INITIAL_CAPACITY_OF_PROTOTYPE_LIST);
+    private static final int INITIAL_CAPACITY_OF_PROTOTYPE_LIST = 10;
+    private final ConcurrentHashMap<Class<? extends GraphicObject>, org.ifno.graphics.interfaces.Cloneable<? extends GraphicObject>> graphicObjectClassList = new ConcurrentHashMap<Class<? extends GraphicObject>, org.ifno.graphics.interfaces.Cloneable<? extends GraphicObject>>(INITIAL_CAPACITY_OF_PROTOTYPE_LIST);
 
     public void addPrototype(Class<? extends GraphicObject> prototypeKey, org.ifno.graphics.interfaces.Cloneable<? extends GraphicObject> prototype) {
         graphicObjectClassList.put(prototypeKey, prototype);

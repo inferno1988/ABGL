@@ -34,7 +34,7 @@ public class SpectrogramActivity extends Activity {
     public static final int ENCODING_PCM_16_BIT = AudioFormat.ENCODING_PCM_16BIT;
     private final BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<Runnable>(FFT_JOB_QUEUE_CAPACITY);
     private final RejectedExecutionHandler rejectedExecutionHandler = new ThreadPoolExecutor.CallerRunsPolicy();
-    private ExecutorService executor = new ThreadPoolExecutor(1, Runtime.getRuntime().availableProcessors() + 1, 5000L, TimeUnit.MILLISECONDS, blockingQueue, rejectedExecutionHandler);
+    private final ExecutorService executor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(), 5000L, TimeUnit.MILLISECONDS, blockingQueue, rejectedExecutionHandler);
     private final ArrayBlockingQueue<Future<float[]>> fftJobQueue = new ArrayBlockingQueue<Future<float[]>>(FFT_JOB_QUEUE_CAPACITY);
     private AudioPoller audioPoller;
     private FFTResultProcessor fftResultProcessor;

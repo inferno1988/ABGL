@@ -70,8 +70,7 @@ public class GraphicsContainer implements CompositeGraphicObject {
 
     @Override
     public void draw(Canvas canvas) {
-        for (Iterator<GraphicObject> graphicObjectIterator = graphicsPool.iterator(); graphicObjectIterator.hasNext(); ) {
-            GraphicObject graphicObject = graphicObjectIterator.next();
+        for (GraphicObject graphicObject : graphicsPool) {
             if (graphicObject != null)
                 graphicObject.draw(canvas);
         }
@@ -119,8 +118,7 @@ public class GraphicsContainer implements CompositeGraphicObject {
 
     @Override
     public void move(int deltaX, int deltaY) {
-        for (Iterator<GraphicObject> graphicObjectIterator = graphicsPool.iterator(); graphicObjectIterator.hasNext(); ) {
-            GraphicObject graphicObject = graphicObjectIterator.next();
+        for (GraphicObject graphicObject : graphicsPool) {
             if (graphicObject != null)
                 graphicObject.move(deltaX, deltaY);
         }
@@ -128,8 +126,7 @@ public class GraphicsContainer implements CompositeGraphicObject {
 
     @Override
     public void resize(Rect newRect) {
-        for (Iterator<GraphicObject> graphicObjectIterator = graphicsPool.iterator(); graphicObjectIterator.hasNext(); ) {
-            GraphicObject graphicObject = graphicObjectIterator.next();
+        for (GraphicObject graphicObject : graphicsPool) {
             if (graphicObject != null)
                 graphicObject.resize(newRect);
         }
@@ -139,8 +136,7 @@ public class GraphicsContainer implements CompositeGraphicObject {
     public GraphicsContainer cloneGraphicObject() {
         GraphicsContainer graphicsContainer = new GraphicsContainer();
         ArrayDeque<GraphicObject> children = new ArrayDeque<GraphicObject>(graphicsPool.size());
-        for (Iterator<GraphicObject> graphicObjectIterator = graphicsPool.iterator(); graphicObjectIterator.hasNext(); ) {
-            GraphicObject graphicObject = graphicObjectIterator.next();
+        for (GraphicObject graphicObject : graphicsPool) {
             if (graphicObject != null)
                 children.add(graphicObject.cloneGraphicObject());
         }
