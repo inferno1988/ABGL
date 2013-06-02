@@ -29,7 +29,7 @@ public class FFTJob implements Callable<float[]> {
     @Override
     public float[] call() throws Exception {
         float[] transformResult = shortToFloat(data);
-        blackmanHarrisWindow(transformResult);
+        //blackmanHarrisWindow(transformResult);
         fft.realForward(transformResult);
         return transformResult;
     }
@@ -37,25 +37,19 @@ public class FFTJob implements Callable<float[]> {
     private float[] shortToFloat(short[] audioBuffer) {
         final float[] result = new float[audioBuffer.length];
         for (int i = 0; i < audioBuffer.length; i++) {
-            short src = audioBuffer[i];
-            float dst = 0.0f;
-            if (src < -33) {
-                dst = (Math.abs((float) src) / Math.abs(Short.MIN_VALUE))*-1.0f;
-            } else if (src > 33) {
-                dst = (float) src / Short.MAX_VALUE;
-            }
-            result[i] = dst;
+            result[i] = audioBuffer[i] * hammingWindow(i, audioBuffer.length);
         }
         return result;
     }
 
-    private void blackmanHarrisWindow(float[] dataToBeWindowed) {
-        int N = dataToBeWindowed.length;
-        for (int i = 0; i < dataToBeWindowed.length; i++) {
-            dataToBeWindowed[i] *= (float) (BLACKMAN_HARRIS_A0 -
-                    BLACKMAN_HARRIS_A1 * Math.cos(2.0f * Math.PI * dataToBeWindowed[i] / N - 1.0f) +
-                    BLACKMAN_HARRIS_A2 * Math.cos(4.0f * Math.PI * dataToBeWindowed[i] / N - 1.0f) -
-                    BLACKMAN_HARRIS_A3 * Math.cos(6.0f * Math.PI * dataToBeWindowed[i] / N - 1.0f));
-        }
+    private float blackmanHarrisWindow(int n, int N) {
+        return (float) (BLACKMAN_HARRIS_A0 -
+                BLACKMAN_HARRIS_A1 * Math.cos(2.0f * Math.PI * n / N - 1.0f) +
+                BLACKMAN_HARRIS_A2 * Math.cos(4.0f * Math.PI * n / N - 1.0f) -
+                BLACKMAN_HARRIS_A3 * Math.cos(6.0f * Math.PI * n / N - 1.0f));
+    }
+
+    private float hammingWindow(int n, int N) {
+        return 0.54f - 0.46f * (float) Math.cos(((2 * Math.PI * n) / (N - 1)));
     }
 }

@@ -45,6 +45,12 @@ public class GraphicsContainer implements CompositeGraphicObject {
     public void addChild(GraphicObject graphicObject) {
         graphicObject.setParent(this);
         graphicObject.setPaint(this.paint);
+        if (graphicObject.getRect() == null)
+            graphicObject.setRect(this.rect);
+        if (graphicObject.getPaint() == null)
+            graphicObject.setPaint(this.paint);
+        if (graphicObject.getName() == null || graphicObject.getName().equals(""))
+            graphicObject.setName("child of: "+this.name+" subtype: "+graphicObject.getClass().getSimpleName());
         graphicsPool.add(graphicObject);
     }
 

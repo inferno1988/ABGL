@@ -12,7 +12,7 @@ import java.util.List;
  * Palamarchuk Maksym © 2013
  */
 public interface VisualisationStrategy<InputDataType> {
-    public Bitmap visualise(InputDataType data);
+    public void visualise(InputDataType data);
     public Bitmap getVisualisationResult();
     public void releaseResources();
 }

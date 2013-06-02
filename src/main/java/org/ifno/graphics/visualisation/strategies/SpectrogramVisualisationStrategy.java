@@ -36,8 +36,8 @@ public class SpectrogramVisualisationStrategy implements VisualisationStrategy<f
     }
 
     @Override
-    public Bitmap visualise(float[] data) {
-        return destinationBitmap;
+    public void visualise(float[] data) {
+
     }
 
     @Override

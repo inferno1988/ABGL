@@ -2,8 +2,6 @@ package org.ifno;
 
 import android.content.Context;
 import android.graphics.*;
-import android.os.*;
-import android.os.Process;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -114,7 +112,6 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
 
         @Override
         public void run() {
-            android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY);
             while (enabled && !Thread.currentThread().isInterrupted()) {
                 Log.v(LOG_TAG, "repainting");
                 try {
@@ -130,21 +127,26 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
-        private void draw() {
-            Canvas canvas = getHolder().lockCanvas();
-            if (canvas == null)
-                return;
-            canvas.drawColor(Color.BLACK);
-            canvas.drawRect(2, 2, canvas.getWidth() - 2, canvas.getHeight() - 2, paint);
+        private synchronized void draw() {
+            Canvas canvas = null;
+            try {
+                canvas = getHolder().lockCanvas();
+                if (canvas == null)
+                    return;
 
-            if (graphicsContainer != null)
-                graphicsContainer.draw(canvas);
-            else {
-                canvas.drawText("Nothing to draw, sorry. Time is: " + System.currentTimeMillis(), 0, 20, paint);
-                canvas.drawText("Canvas size: w->" + canvas.getWidth() + " h->" + canvas.getHeight(), 0, 50, paint);
-                canvas.drawText("Update interval: " + timedInvalidator.getUpdateInterval(), 0, 80, paint);
+                if (graphicsContainer != null)
+                    graphicsContainer.draw(canvas);
+                else {
+                    canvas.drawText("Nothing to draw, sorry. Time is: " + System.currentTimeMillis(), 0, 20, paint);
+                    canvas.drawText("Canvas size: w->" + canvas.getWidth() + " h->" + canvas.getHeight(), 0, 50, paint);
+                    canvas.drawText("Update interval: " + timedInvalidator.getUpdateInterval(), 0, 80, paint);
+                }
+            } finally {
+                if (canvas != null) {
+                    getHolder().unlockCanvasAndPost(canvas);
+                }
+
             }
-            getHolder().unlockCanvasAndPost(canvas);
         }
 
         private void checkForPaused() throws InterruptedException {

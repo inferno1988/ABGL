@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import org.ifno.graphics.interfaces.CompositeGraphicObject;
 import org.ifno.graphics.interfaces.GraphicObject;
+import org.ifno.graphics.visualisation.strategies.VisualisationStrategy;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,13 +20,22 @@ public class BitmapPrimitive implements GraphicObject {
     private String name;
     private CompositeGraphicObject parent;
     private Rect rect;
-    private Bitmap assignedBitmap;
+    private VisualisationStrategy visualisationStrategy;
     private Paint paint;
+
+    public BitmapPrimitive(Rect rect) {
+        this.rect = rect;
+    }
+
+    private BitmapPrimitive() {
+    }
 
     @Override
     public void draw(Canvas canvas) {
-        if (assignedBitmap != null)
-            canvas.drawBitmap(assignedBitmap, rect.left, rect.top, paint);
+        if (visualisationStrategy != null) {
+            final Bitmap visualisationResult = visualisationStrategy.getVisualisationResult();
+            canvas.drawBitmap(visualisationResult, rect.left, rect.top, paint);
+        }
         else
             throw new IllegalStateException("bitmap is null, can't proceed drawing.");
     }
@@ -88,20 +98,16 @@ public class BitmapPrimitive implements GraphicObject {
         bitmapPrimitive.name = this.name;
         bitmapPrimitive.rect = new Rect(this.rect);
         bitmapPrimitive.paint = new Paint(this.paint);
-        bitmapPrimitive.assignedBitmap = this.assignedBitmap.copy(this.assignedBitmap.getConfig(), true);
+        bitmapPrimitive.visualisationStrategy = this.visualisationStrategy;
         bitmapPrimitive.parent = this.parent;
         return bitmapPrimitive;
     }
 
-    public Bitmap getAssignedBitmap() {
-        return assignedBitmap;
+    public VisualisationStrategy getVisualisationStrategy() {
+        return visualisationStrategy;
     }
 
-    public void setAssignedBitmap(Bitmap assignedBitmap) {
-        if (assignedBitmap.getWidth() != rect.width() && assignedBitmap.getHeight() != rect.height()) {
-            this.assignedBitmap = Bitmap.createScaledBitmap(assignedBitmap, rect.width(), rect.height(), false);
-        } else {
-            this.assignedBitmap = assignedBitmap;
-        }
+    public void setVisualisationStrategy(VisualisationStrategy visualisationStrategy) {
+        this.visualisationStrategy = visualisationStrategy;
     }
 }

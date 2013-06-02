@@ -1,7 +1,7 @@
 package org.ifno.audio;
 
-import android.graphics.Bitmap;
 import android.util.Log;
+import org.ifno.graphics.visualisation.strategies.VisualisationStrategy;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutionException;
@@ -16,10 +16,12 @@ import java.util.concurrent.TimeUnit;
  * Palamarchuk Maksym © 2013
  */
 public class FFTResultProcessor implements Runnable {
+    private VisualisationStrategy visualisationStrategy;
     private final ArrayBlockingQueue<Future<float[]>> fftJobQueue;
     private final String LOG_TAG = this.getClass().getSimpleName();
 
-    public FFTResultProcessor(ArrayBlockingQueue<Future<float[]>> fftJobQueue) {
+    public FFTResultProcessor(VisualisationStrategy visualisationStrategy, ArrayBlockingQueue<Future<float[]>> fftJobQueue) {
+        this.visualisationStrategy = visualisationStrategy;
         this.fftJobQueue = fftJobQueue;
     }
 
@@ -38,15 +40,22 @@ public class FFTResultProcessor implements Runnable {
                     magnitude[k] = (float) Math.sqrt(real * real + im * im);
 
                 }
+                visualisationStrategy.visualise(magnitude);
             } catch (InterruptedException e) {
                 Log.e(LOG_TAG, "FFT result processor was interrupted");
                 if (!fftJobQueue.isEmpty())
                     fftJobQueue.clear();
+                visualisationStrategy.releaseResources();
+                visualisationStrategy = null;
                 return;
             } catch (ExecutionException e) {
                 e.printStackTrace();
+                visualisationStrategy.releaseResources();
+                visualisationStrategy = null;
                 return;
             }
         }
+        visualisationStrategy.releaseResources();
+        visualisationStrategy = null;
     }
 }
