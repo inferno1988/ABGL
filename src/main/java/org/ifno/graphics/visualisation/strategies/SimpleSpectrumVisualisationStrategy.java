@@ -5,6 +5,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
+import java.util.Arrays;
+
 /**
  * Created with IntelliJ IDEA.
  * User: inferno
@@ -14,10 +16,11 @@ import android.graphics.Paint;
  */
 public class SimpleSpectrumVisualisationStrategy implements VisualisationStrategy<float[]> {
 
-    private Bitmap bitmap;
+    private Bitmap[] backBuffer = {null, null};
+    private Bitmap resultBitmap;
     private Canvas canvas;
     private Paint paint = new Paint();
-    private float[] dataSnapshot;
+    private float[] magnitudePeaks;
 
     {
         paint.setColor(Color.WHITE);
@@ -25,17 +28,26 @@ public class SimpleSpectrumVisualisationStrategy implements VisualisationStrateg
         paint.setStrokeWidth(1.f);
     }
 
-    public SimpleSpectrumVisualisationStrategy(Bitmap bitmap) {
-        this.bitmap = bitmap;
-        this.canvas = new Canvas(bitmap);
+    private boolean visibleBitmap = true;
+    private int canvasHeight;
+
+    public SimpleSpectrumVisualisationStrategy(Bitmap backBuffer) {
+        this.backBuffer[0] = backBuffer;
+        this.backBuffer[1] = backBuffer.copy(Bitmap.Config.ARGB_8888, true);
+        this.canvas = new Canvas(this.backBuffer[getIntValue(visibleBitmap)]);
+        this.canvasHeight = this.canvas.getHeight();
+        this.resultBitmap = this.backBuffer[getIntValue(visibleBitmap)];
     }
 
     @Override
     public void visualise(float[] data) {
         synchronized (this) {
-            bitmap.eraseColor(Color.BLACK);
-            if (dataSnapshot == null)
-                dataSnapshot = data;
+            canvas.setBitmap(backBuffer[getIntValue(!visibleBitmap)]);
+            canvas.drawColor(Color.DKGRAY);
+            if (magnitudePeaks == null) {
+                magnitudePeaks = new float[data.length];
+                Arrays.fill(magnitudePeaks, 1f);
+            }
             int limit;
             if (canvas.getWidth() > data.length)
                 limit = data.length;
@@ -43,16 +55,30 @@ public class SimpleSpectrumVisualisationStrategy implements VisualisationStrateg
                 limit = canvas.getWidth();
 
             for (int i = 0; i < limit; i++) {
-                float v = data[i];
-                canvas.drawLine(i, canvas.getHeight(), i, (float) (canvas.getHeight() - (30 * Math.log10(v))), paint);
+                float currentMagnitude = (float) (30 * Math.log10(data[i]));
+                paint.setColor(Color.WHITE);
+                canvas.drawLine(i, canvasHeight, i, canvasHeight - currentMagnitude, paint);
+                if (currentMagnitude > magnitudePeaks[i]) {
+                    magnitudePeaks[i] = currentMagnitude;
+                } else {
+                    magnitudePeaks[i] -= 0.1f;
+                }
+                paint.setColor(Color.RED);
+                canvas.drawPoint(i, canvasHeight - magnitudePeaks[i], paint);
             }
+            resultBitmap = backBuffer[getIntValue(!visibleBitmap)];
+            swapBuffers();
         }
+    }
+
+    private void swapBuffers() {
+        visibleBitmap = !visibleBitmap;
     }
 
     @Override
     public Bitmap getVisualisationResult() {
         synchronized (this) {
-            return bitmap;
+            return resultBitmap;
         }
     }
 
@@ -60,8 +86,15 @@ public class SimpleSpectrumVisualisationStrategy implements VisualisationStrateg
     public void releaseResources() {
         synchronized (this) {
             canvas = null;
-            bitmap.recycle();
-            bitmap = null;
+            backBuffer[0].recycle();
+            backBuffer[0] = null;
+            backBuffer[1].recycle();
+            backBuffer[1] = null;
+            backBuffer = null;
         }
+    }
+
+    private static int getIntValue(boolean booleanValue) {
+        return booleanValue ? 1 : 0;
     }
 }

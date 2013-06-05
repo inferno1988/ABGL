@@ -1,7 +1,9 @@
 package org.ifno;
 
 import android.content.Context;
-import android.graphics.*;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -78,6 +80,7 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
         if (!timedInvalidator.isEnabled()) {
             timedInvalidator.enable();
         }
+        timedInvalidator.setSurfaceHolder(holder);
         timedInvalidatorThread = new Thread(timedInvalidator, "TimedInvalidator");
         timedInvalidatorThread.setDaemon(true);
         timedInvalidatorThread.start();
@@ -97,6 +100,7 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
         private final AtomicLong sleepTime;
         private boolean updating = false;
         private volatile boolean enabled = true;
+        private SurfaceHolder surfaceHolder;
 
         private TimedInvalidator(long sleepTime) {
             this.sleepTime = new AtomicLong(sleepTime);
@@ -127,23 +131,25 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
-        private synchronized void draw() {
+        private void draw() {
             Canvas canvas = null;
             try {
-                canvas = getHolder().lockCanvas();
+                canvas = surfaceHolder.lockCanvas();
                 if (canvas == null)
                     return;
 
-                if (graphicsContainer != null)
-                    graphicsContainer.draw(canvas);
-                else {
-                    canvas.drawText("Nothing to draw, sorry. Time is: " + System.currentTimeMillis(), 0, 20, paint);
-                    canvas.drawText("Canvas size: w->" + canvas.getWidth() + " h->" + canvas.getHeight(), 0, 50, paint);
-                    canvas.drawText("Update interval: " + timedInvalidator.getUpdateInterval(), 0, 80, paint);
+                synchronized (surfaceHolder) {
+                    if (graphicsContainer != null)
+                        graphicsContainer.draw(canvas);
+                    else {
+                        canvas.drawText("Nothing to draw, sorry. Time is: " + System.currentTimeMillis(), 0, 20, paint);
+                        canvas.drawText("Canvas size: w->" + canvas.getWidth() + " h->" + canvas.getHeight(), 0, 50, paint);
+                        canvas.drawText("Update interval: " + timedInvalidator.getUpdateInterval(), 0, 80, paint);
+                    }
                 }
             } finally {
                 if (canvas != null) {
-                    getHolder().unlockCanvasAndPost(canvas);
+                    surfaceHolder.unlockCanvasAndPost(canvas);
                 }
 
             }
@@ -178,6 +184,10 @@ public class DrawingView extends SurfaceView implements SurfaceHolder.Callback {
 
         private boolean isEnabled() {
             return enabled;
+        }
+
+        public void setSurfaceHolder(SurfaceHolder holder) {
+            this.surfaceHolder = holder;
         }
     }
 }

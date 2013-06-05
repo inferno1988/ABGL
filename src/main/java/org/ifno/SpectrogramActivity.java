@@ -91,7 +91,7 @@ public class SpectrogramActivity extends Activity {
 
             if (audioPollerThread == null || !audioPollerThread.isAlive()) {
                 int minBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_IN_MONO, ENCODING_PCM_16_BIT);
-                audioPoller = new AudioPoller(executor, fftJobQueue, MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_IN_MONO, ENCODING_PCM_16_BIT, 4096);
+                audioPoller = new AudioPoller(executor, fftJobQueue, MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_IN_MONO, ENCODING_PCM_16_BIT, minBufferSize);
                 audioPollerThread = new Thread(audioPoller, "AudioPoller");
                 audioPollerThread.setDaemon(true);
                 audioPollerThread.start();
