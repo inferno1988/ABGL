@@ -37,7 +37,7 @@ public class FFTResultProcessor implements Runnable {
                 for (int k = 0; k < result.length / 2 - 1; k++) {
                     float real = result[2 * k];
                     float im = result[2 * k + 1];
-                    magnitude[k] = real * real + im * im;
+                    magnitude[k] = (float) Math.sqrt(real * real + im * im);
 
                 }
                 visualisationStrategy.visualise(magnitude);

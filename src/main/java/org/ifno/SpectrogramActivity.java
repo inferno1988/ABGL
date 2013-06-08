@@ -32,7 +32,7 @@ import java.util.concurrent.*;
 public class SpectrogramActivity extends Activity {
     private static final String LOG_TAG = SpectrogramActivity.class.getSimpleName();
     private static final int FFT_JOB_QUEUE_CAPACITY = 10;
-    private static final int SAMPLE_RATE = 44100;
+    public static final int SAMPLE_RATE = 44100;
     public static final int UPDATE_INTERVAL_LIMIT = 16;
     private DrawingView drawingView;
     private Button toggleProcessingButton;
@@ -78,7 +78,7 @@ public class SpectrogramActivity extends Activity {
         if (currentButtonText.equals(startButtonText)) {
             BitmapPrimitive bitmapPrimitive = new BitmapPrimitive(drawingView.getHolder().getSurfaceFrame());
             final Bitmap bitmap = Bitmap.createBitmap(drawingView.getMeasuredWidth(), drawingView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-            bitmap.eraseColor(Color.GREEN);
+            bitmap.eraseColor(Color.DKGRAY);
             VisualisationStrategy visualisationStrategy = new SimpleSpectrumVisualisationStrategy(bitmap);
             bitmapPrimitive.setVisualisationStrategy(visualisationStrategy);
 
