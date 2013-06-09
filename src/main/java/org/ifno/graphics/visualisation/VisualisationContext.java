@@ -16,10 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class VisualisationContext {
     private final ConcurrentHashMap<Class<? extends VisualisationStrategy>, VisualisationStrategy> visualisationStrategyMap = new ConcurrentHashMap<Class<? extends VisualisationStrategy>, VisualisationStrategy>();
-    private final Context context;
 
-    public VisualisationContext(Context context) {
-        this.context = context;
+    public VisualisationContext() {
     }
 
     public void registerStrategy(VisualisationStrategy visualisationStrategy) {

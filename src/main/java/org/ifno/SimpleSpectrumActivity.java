@@ -26,11 +26,11 @@ import java.util.concurrent.*;
 /**
  * Created with IntelliJ IDEA.
  * User: inferno
- * Date: 21.04.13
- * Time: 17:05
+ * Date: 09.06.13
+ * Time: 17:46
  * Palamarchuk Maksym © 2013
  */
-public class SpectrogramActivity extends Activity {
+public class SimpleSpectrumActivity extends Activity {
     private static final String LOG_TAG = SpectrogramActivity.class.getSimpleName();
     private static final int FFT_JOB_QUEUE_CAPACITY = 10;
     public static final int SAMPLE_RATE = 44100;
@@ -50,6 +50,8 @@ public class SpectrogramActivity extends Activity {
     private Thread resultProcessorThread;
     private CharSequence startButtonText;
     private CharSequence stopButtonText;
+    private int drawingViewWidth = -1;
+    private int drawingViewHeight = -1;
     private VisualisationStrategy visualisationStrategy;
 
     public void onCreate(Bundle savedInstanceState) {
@@ -69,6 +71,7 @@ public class SpectrogramActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        toggleProcessingButton.setText(startButtonText);
         drawingView.stopDrawing();
         audioPollerThread.interrupt();
         resultProcessorThread.interrupt();
@@ -78,6 +81,7 @@ public class SpectrogramActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        toggleProcessingButton.setText(startButtonText);
         drawingView.stopDrawing();
         audioPollerThread.interrupt();
         resultProcessorThread.interrupt();
@@ -90,7 +94,7 @@ public class SpectrogramActivity extends Activity {
             BitmapPrimitive bitmapPrimitive = new BitmapPrimitive(drawingView.getHolder().getSurfaceFrame());
             final Bitmap bitmap = Bitmap.createBitmap(drawingView.getMeasuredWidth(), drawingView.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
             bitmap.eraseColor(Color.DKGRAY);
-            visualisationStrategy = new SpectrogramVisualisationStrategy(bitmap);
+            visualisationStrategy = new SimpleSpectrumVisualisationStrategy(bitmap);
             bitmapPrimitive.setVisualisationStrategy(visualisationStrategy);
 
             GraphicsContainer graphicsContainer = new GraphicsContainer("MAIN", new Paint(), drawingView.getHolder().getSurfaceFrame());

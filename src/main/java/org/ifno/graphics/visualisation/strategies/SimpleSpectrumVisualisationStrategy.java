@@ -1,11 +1,10 @@
 package org.ifno.graphics.visualisation.strategies;
 
 import android.graphics.*;
-import android.util.Log;
 import org.ifno.SpectrogramActivity;
-import org.ifno.audio.AudioPoller;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -18,13 +17,14 @@ import java.util.concurrent.atomic.AtomicReference;
 public class SimpleSpectrumVisualisationStrategy implements VisualisationStrategy<float[]> {
 
     public static final int DB_THRESHOLD = 50;
+    private static final String SIMPLE_SPECTRUM_STRATEGY_NAME = "Simple spectrum";
     private final String simpleName = SimpleSpectrumVisualisationStrategy.class.getSimpleName();
     private Bitmap[] backBuffer = {null, null};
     private AtomicReference<Bitmap> resultBitmap = new AtomicReference<Bitmap>(null);
-    private Canvas canvas;
-    private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.HINTING_ON);
+    private final Canvas canvas;
+    private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.HINTING_ON);
     private float[] magnitudePeaks;
-    private float maximum = 6000000.0f;
+    private final static float MAXIMUM_SIGNAL_LEVEL = 6000000.0f;
     private static final String HZ = "Hz";
     private final float hzWidth;
 
@@ -60,14 +60,14 @@ public class SimpleSpectrumVisualisationStrategy implements VisualisationStrateg
             Arrays.fill(magnitudePeaks, 1f);
         }
         int limit;
-        if (canvas.getWidth() > data.length)
+        if (canvasWidth > data.length)
             limit = data.length;
         else
             limit = canvas.getWidth();
         Path path = new Path();
         path.moveTo(0, canvasHeight - 50.f);
         for (int i = 0; i < limit; i++) {
-            float currentMagnitude = (float) (canvasHeight - ((Math.abs(10 * Math.log10(data[i] / maximum)) / DB_THRESHOLD) * canvasHeight));
+            float currentMagnitude = (float) (canvasHeight - ((Math.abs(10 * Math.log10(data[i] / MAXIMUM_SIGNAL_LEVEL)) / DB_THRESHOLD) * canvasHeight));
             if (currentMagnitude > magnitudePeaks[i]) {
                 magnitudePeaks[i] = currentMagnitude;
             } else {
@@ -77,8 +77,6 @@ public class SimpleSpectrumVisualisationStrategy implements VisualisationStrateg
                     magnitudePeaks[i] = 50.f;
             }
             path.lineTo(i, canvasHeight - magnitudePeaks[i]);
-            if (data[i] > maximum)
-                maximum = data[i];
         }
         path.lineTo(canvasWidth, canvasHeight - 50.f);
         path.close();
@@ -105,18 +103,26 @@ public class SimpleSpectrumVisualisationStrategy implements VisualisationStrateg
     }
 
     @Override
-    public void releaseResources() {
-        synchronized (this) {
-            canvas = null;
+    public synchronized void releaseResources() {
             backBuffer[0].recycle();
             backBuffer[0] = null;
             backBuffer[1].recycle();
             backBuffer[1] = null;
             backBuffer = null;
-        }
+    }
+
+    @Override
+    public synchronized void toggleColor() {
+        Random rnd = new Random();
+        paint.setARGB(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
     }
 
     private static int getIntValue(boolean booleanValue) {
         return booleanValue ? 1 : 0;
+    }
+
+    @Override
+    public String toString() {
+        return SIMPLE_SPECTRUM_STRATEGY_NAME;
     }
 }

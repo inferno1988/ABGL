@@ -15,4 +15,5 @@ public interface VisualisationStrategy<InputDataType> {
     public void visualise(InputDataType data);
     public Bitmap getVisualisationResult();
     public void releaseResources();
+    public void toggleColor();
 }

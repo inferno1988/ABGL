@@ -24,6 +24,8 @@
         </activity>
         <activity android:screenOrientation="landscape"
                   android:name=".SpectrogramActivity"/>
+        <activity android:screenOrientation="landscape"
+                  android:name=".SimpleSpectrumActivity"/>
     </application>
 
 </manifest>

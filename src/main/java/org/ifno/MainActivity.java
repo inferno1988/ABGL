@@ -43,6 +43,10 @@ public class MainActivity extends Activity {
             Intent intent = new Intent(this, SpectrogramActivity.class);
             startActivity(intent);
         }
+        if (selectedItem.equals(valuesList[1])) {
+            Intent intent = new Intent(this, SimpleSpectrumActivity.class);
+            startActivity(intent);
+        }
     }
 }
 
